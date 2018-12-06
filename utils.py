@@ -31,3 +31,12 @@ def saturation(x, ymin, ymax, slope):
          ymax]
     )
     return y
+
+
+def create_activation_function(func_params):
+    if func_params['type'] == 'saturation':
+        return lambda x: saturation(x, func_params['min'], func_params['max'], func_params['slope'])
+    elif func_params['type'] == 'sigmoid':
+        return lambda x: sigmoid(x, func_params['m'], func_params['b'])
+    else:
+        raise ValueError('Unknown activation function type')

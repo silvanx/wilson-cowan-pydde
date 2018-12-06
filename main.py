@@ -22,13 +22,34 @@ def save_simulation_results(params, result):
 
 
 def run_simulation(params):
+    constants = [
+        params['tau1'],   # 0:  tau1 [ms]
+        params['tau2'],   # 1:  tau2 [ms]
+        params['c11'],    # 2:  c11
+        params['c12'],    # 3:  c12
+        params['c21'],    # 4:  c21
+        params['c22'],    # 5:  c22  !
+        params['d11'],    # 6:  d11
+        params['d12'],    # 7:  d12 [ms]
+        params['d21'],    # 8:  d21 [ms]
+        params['d22'],    # 9:  d22 [ms]
+        params['m1'],     # 10: m1 [spk/s]
+        params['b1'],     # 11: b1 [spk/s]
+        params['m2'],     # 12: m2 [spk/s]
+        params['b2'],     # 13: b2 [spk/s]
+        params['u1'],     # 14: u1 [spk/s] !
+        params['u2'],     # 15: u2 [spk/s]
+        params['x10'],    # 16: x1_0 [spk/s]
+        params['x20'],    # 17: x2_0 [spk/s]
+        params['theta0']  # 18: theta_0
+    ]
+    tstop = params['tstop']
+    dt = params['dt']
 
-    # TODO: initialize activation functions based on params
-    def s1(x):
-        return utils.saturation(x, 16, 300, 0.5)
+    initial_state = np.array([constants[16], constants[17], constants[18]])
 
-    def s2(x):
-        return utils.saturation(x, 30, 400, 0.3)
+    s1 = utils.create_activation_function(params['activation_function_1'])
+    s2 = utils.create_activation_function(params['activation_function_2'])
 
     def ddegrad(s, c, t):
         """Equations defining time evolution of the system. Returns the value of the derivative at time t
@@ -69,31 +90,6 @@ def run_simulation(params):
         ])
 
     system = pydde.dde()
-    constants = [
-        params['tau1'],   # 0:  tau1 [ms]
-        params['tau2'],   # 1:  tau2 [ms]
-        params['c11'],    # 2:  c11
-        params['c12'],    # 3:  c12
-        params['c21'],    # 4:  c21
-        params['c22'],    # 5:  c22  !
-        params['d11'],    # 6:  d11
-        params['d12'],    # 7:  d12 [ms]
-        params['d21'],    # 8:  d21 [ms]
-        params['d22'],    # 9:  d22 [ms]
-        params['m1'],     # 10: m1 [spk/s]
-        params['b1'],     # 11: b1 [spk/s]
-        params['m2'],     # 12: m2 [spk/s]
-        params['b2'],     # 13: b2 [spk/s]
-        params['u1'],     # 14: u1 [spk/s] !
-        params['u2'],     # 15: u2 [spk/s]
-        params['x10'],    # 16: x1_0 [spk/s]
-        params['x20'],    # 17: x2_0 [spk/s]
-        params['theta0']  # 18: theta_0
-    ]
-    tstop = params['tstop']
-    dt = params['dt']
-
-    initial_state = np.array([constants[16], constants[17], constants[18]])
 
     system.dde(y=initial_state, times=np.arange(0.0, tstop, dt), func=ddegrad, parms=constants,
                tol=10e-7, dt=dt, nlag=4, hbsize=800000)
@@ -125,8 +121,20 @@ if __name__ == "__main__":
         'x10': 40,
         'x20': 40,
         'theta0': 0,
-        'tstop': 3500,
-        'dt': 0.5
+        'tstop': 5000,
+        'dt': 0.5,
+        'activation_function_1': {
+            'type': 'saturation',
+            'min': 16,
+            'max': 300,
+            'slope': 0.7
+        },
+        'activation_function_2': {
+            'type': 'saturation',
+            'min': 32,
+            'max': 400,
+            'slope': 0.45
+        }
     }
 
     simulation_data = run_simulation(params)
