@@ -4,15 +4,40 @@ from PyDDE import pydde
 import matplotlib.pyplot as plt
 import utils
 import copy
+import scipy.signal
 
 
-def plot_simulation_results(result):
+def plot_time_series(result):
     tt, x1, x2, theta = zip(*result)
+    t = np.array(tt) / 1000
     plt.figure()
-    plt.plot(tt, x1)
-    plt.plot(tt, x2)
-    plt.plot(tt, theta)
+    plt.plot(t, x1)
+    plt.plot(t, x2)
+    plt.plot(t, theta)
+    plt.xlabel('Time [s]')
+    plt.ylabel('Activity [spk/s]')
     plt.legend(['STN', 'GPe', 'Theta'])
+    plt.show()
+
+
+def plot_spectral_density(result, fs):
+    """Plot spectral density estimated with Welch method
+
+    :param result:
+    :return:
+    """
+    tt, x1, x2, theta = zip(*result)
+    f1, density1 = scipy.signal.welch(np.array(x1), fs)
+    f2, density2 = scipy.signal.welch(np.array(x2), fs)
+    dominant_f1 = f1[np.argmax(density1)]
+    dominant_f2 = f2[np.argmax(density2)]
+    print('Dominant frequency STN=%2.2f Hz, GPe=%2.2f Hz' % (dominant_f1, dominant_f2))
+    plt.figure()
+    plt.semilogy(f1, density1)
+    plt.semilogy(f2, density2)
+    plt.legend(['STN', 'GPe'])
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('PSD')
     plt.show()
 
 
@@ -122,7 +147,7 @@ if __name__ == "__main__":
         'x20': 40,
         'theta0': 0,
         'tstop': 5000,
-        'dt': 0.5,
+        'dt': 0.3,
         'activation_function_1': {
             'type': 'saturation',
             'min': 16,
@@ -139,4 +164,6 @@ if __name__ == "__main__":
 
     simulation_data = run_simulation(params)
     save_simulation_results(params, simulation_data)
-    plot_simulation_results(simulation_data)
+    plot_time_series(simulation_data)
+    fs = 1000 / params['dt']
+    plot_spectral_density(simulation_data, fs)
