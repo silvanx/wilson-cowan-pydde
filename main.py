@@ -17,7 +17,8 @@ def plot_time_series(result):
     plt.xlabel('Time [s]')
     plt.ylabel('Activity [spk/s]')
     plt.legend(['STN', 'GPe', 'Theta'])
-    plt.show()
+    # plt.show()
+    plt.savefig('plots/ts.png')
 
 
 def plot_spectral_density(result, fs):
@@ -38,7 +39,8 @@ def plot_spectral_density(result, fs):
     plt.legend(['STN', 'GPe'])
     plt.xlabel('Frequency [Hz]')
     plt.ylabel('PSD')
-    plt.show()
+    # plt.show()
+    plt.savefig('plots/psd.png')
 
 
 def save_simulation_results(params, result):
